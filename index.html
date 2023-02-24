@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html lang="en">
+<head>
+<title>Student Registration Form</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet"
+href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script
+src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script
+src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="http://login2explore.com/jpdb/resources/js/0.0.3/jpdb-commons.js"></script>
+</head>
+<body>
+<div class="container">
+<h2>Vertical (basic) form</h2>
+<form id="studorm" method="get">
+<div class="form-group">
+<span><label for="rollno">roll no:</label> <label id="rollnoMsg">
+</label></span>
+<input type="text" class="form-control" name="rollno" id="rollno"
+placeholder="Enter roll no" required onchange="getstu()">
+</div>
+<div class="form-group">
+<label for="studentName">Student Name:</label>
+<input type="text" class="form-control" id="studentName"
+placeholder="Enter Student Name" name="studentName">
+</div>
+<div class="form-group">
+<label for="bdate">Birth Date:</label>
+<input type="date" class="form-control" id="bdate"
+placeholder="Enter DOB" name="bdate">
+</div>
+<div class="form-group">
+<label for="address">address:</label>
+<input type="text" class="form-control" id="address"
+placeholder="Enter Student address" name="address">
+</div>
+<div class="form-group">
+<label for="edate">Enrollemnet Date:</label>
+<input type="date" class="form-control" id="edate"
+placeholder="Enter DOE" name="edate">
+</div>
+<button type="button" class="btn btn-lg btn-primary" id="save" onclick="savedata()" disabled>save</button>
+<button type="button" class="btn btn-lg btn-primary" id="reset" onclick="resetForm()" disabled >reset</button>
+<button type="button" class="btn btn-lg btn-primary" id="change" onclick="changedata()" disabled>change</button>
+</form>
+</div>
+<script>
+var con_token='90932513|-31949274731028779|90949150';
+function validateAndGetFormData() {
+var empIdVar = $("#empId").val();
+if (empIdVar === "") {
+alert("Employee ID Required Value");
+$("#empId").focus();
+return "";
+}
+var rollnovar = $("#rollno").val();
+if (rollnovar === "") {
+alert(" roll is Required Value");
+$("#rollno").focus();
+return "";
+}
+var studentNamevar = $("#studentName").val();
+if (studentNamevar === "") {
+alert("Student Name is Required Value");
+$("#studentName").focus();
+return "";
+}
+var bdatevar = $("#bdate").val();
+if (bdatevar === "") {
+alert("bdate is Required Value");
+$("#bdate").focus();
+return "";
+}
+var edatevar = $("#edate").val();
+if (edatevar === "") {
+alert("edate is Required Value");
+$("#edate").focus();
+return "";}
+var addressvar = $("#address").val();
+if (addressvar === "") {
+alert("address is Required Value");
+$("#address").focus();
+return "";
+}
+var jsonStrObj = {
+ rollno: rollnovar,
+ studentName: studentNamevar ,
+ bdate: bdatevar,
+ edate:edatevar,
+ address:addressvar,
+};
+return JSON.stringify(jsonStrObj);
+}
+function saveRecNo2LS(jsonobj){
+    var lvData=JSON.parse(jsonobj.data);
+    localStorage.setItem('recno',lvData.rec_no);
+}
+function getstuidasjsonobj(){
+    var rollnovar1=$("#rollno").val();
+    var jsonStr={
+        rollno: rollnovar1
+    };
+    return JSON.stringify(jsonStr);
+}
+function filldata(jsonobj){
+    saveRecNo2LS(jsonobj);
+    var record=JSON.parse(jsonobj.data).record;
+    $("#studentName").val(record.studentName);
+    $("#bdate").val(record.bdate);
+    $("#edate").val(record.edate);
+    $("#address").val(record.address);
+
+}
+
+function getstu(){
+    var stuidjsonobj=getstuidasjsonobj();
+    var getRequest=createGET_BY_KEYRequest(con_token,"STUDENT-TABLE","SCHOOL-DB",stuidjsonobj);
+    jQuery.ajaxSetup({async:false});
+    var resJsonobj=executeCommandAtGivenBaseUrl(getRequest,"http://api.login2explore.com:5577", "/api/irl");
+    jQuery.ajaxSetup({async:true});
+    if(resJsonobj.status==400){
+        $("#save").prop('disabled',false);
+        $("#reset").prop('disabled',false);
+        $("#studentName").focus();
+    }else if(resJsonobj.status==200){
+        $("#rollno").prop("disabled",true)
+        filldata(resJsonobj);
+        $("#change").prop("disabled",false);
+        $("reset").prop("disabled",false);
+        $("#studentName").focus();
+    }
+}
+function resetForm() {
+$("#rollno").val("")
+$("#studentName").val("");
+$("#bdate").val("");
+$("#edate").val("");
+$("#address").val("");
+$("#rollno").focus();
+}
+
+function savedata() {
+var jsonStr = validateAndGetFormData();
+if (jsonStr === "") {
+return;
+}
+var putReqStr = createPUTRequest("90932513|-31949274731028779|90949150",
+jsonStr, "STUDENT-TABLE", "SCHOOL-DB");
+jQuery.ajaxSetup({async: false});
+var resultObj = executeCommandAtGivenBaseUrl(putReqStr,
+"http://api.login2explore.com:5577", "/api/iml");
+alert(JSON.stringify(resultObj));
+jQuery.ajaxSetup({async: true});
+resetForm();
+}
+function changedata(){
+    $("#change").prop("disabled",true);
+    jsoncng=validateAndGetFormData();
+    var putReqStr = createUPDATERecordRequest("90932513|-31949274731028779|90949150",jsoncng, "STUDENT-TABLE", "SCHOOL-DB",localStorage.getItem('recno'));
+    jQuery.ajaxSetup({async: false});
+    var resultObj = executeCommandAtGivenBaseUrl(putReqStr,
+    "http://api.login2explore.com:5577", "/api/iml");
+    jQuery.ajaxSetup({async: true});
+    resetForm();
+
+}
+</script>
